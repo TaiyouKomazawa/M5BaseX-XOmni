@@ -1,0 +1,40 @@
+#########################################
+# Syntax Coloring Map For M5BaseXOmniLibs
+#########################################
+
+#########################################
+# Library (KEYWORD3)
+#########################################
+
+BASE_X	        KEYWORD3
+WheelVector     KEYWORD3
+WheelOmniEv3	KEYWORD3
+
+#########################################
+# Methods and Functions (KEYWORD2)
+#########################################
+
+begin	KEYWORD2
+
+SetMode KEYWORD2
+
+GetEncoderValue         KEYWORD2
+SetEncoderValue         KEYWORD2
+SetMotorSpeed           KEYWORD2
+GetMotorSpeed           KEYWORD2
+GetMotorSpeed20MS       KEYWORD2
+SetPositionPID          KEYWORD2
+SetPositionPoint        KEYWORD2
+SetPostionPIDMaxSpeed   KEYWORD2
+SetSpeedPID             KEYWORD2
+SetSpeedPoint           KEYWORD2
+SetServoAngle           KEYWORD2
+SetServoPulseWidth      KEYWORD2
+
+get             KEYWORD2
+set             KEYWORD2
+get_vel         KEYWORD2
+set_pid         KEYWORD2
+get_wheel_vel   KEYWORD2
+reset           KEYWORD2
+reset_pid       KEYWORD2

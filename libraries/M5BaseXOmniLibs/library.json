@@ -1,0 +1,12 @@
+{
+    "name": "M5BaseXOmniLibs",
+    "description": "Utility for controlling omnis with ev3 motor.",
+    "category": "Device Control",
+    "authors": {
+      "name": "Taiyou Komazawa"
+    },
+    "version": "0.0.0",
+    "framework": "arduino",
+    "platforms": "espressif32"
+  }
+  
