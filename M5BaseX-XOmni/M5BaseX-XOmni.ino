@@ -52,45 +52,10 @@ void loop()
   static long lcd_cleared = millis();
   static float speed_x, speed_y, speed_th;
   static double odom_x, odom_y, odom_th;
-  //static int mode = 0;
-
-
-  /*int32_t encoder[4];
-  for (size_t i = 1; i < 5; i++)
-  {
-    encoder[i - 1] = base_x.GetEncoderValue(i);
-  }*/
 
   M5.update();
   M5.Lcd.setCursor(10, 10);
-/*
-  if(M5.BtnB.wasPressed()){
-    mode += (mode < 3) ? 1 : -mode;
-  }
 
-  if(mode == 0){
-    M5.Lcd.print(" x-speed-set\r\n");
-    if(M5.BtnC.wasPressed()){
-      speed_x += 5;
-    }else if(M5.BtnA.wasPressed()){
-      speed_x -= 5;
-    }
-  }else if(mode == 1){
-    M5.Lcd.print(" y-speed-set\r\n");
-    if(M5.BtnC.wasPressed()){
-      speed_y += 5;
-    }else if(M5.BtnA.wasPressed()){
-      speed_y -= 5;
-    }
-  }else{
-    M5.Lcd.print("th-speed-set\r\n");
-    if(M5.BtnC.wasPressed()){
-      speed_th += M_PI/32;
-    }else if(M5.BtnA.wasPressed()){
-      speed_th -= M_PI/32;
-    }
-  }
-*/
   serial.update();
 
   if(serial.read() == 0){
@@ -111,7 +76,7 @@ void loop()
 
   M5.Lcd.printf("speed[mm,dec]:\n %.1f\n %.1f\n %.1f\n",speed_x, speed_y, speed_th/M_PI*180);
   M5.Lcd.printf("pose [mm,dec]:\n %.1lf\n %.1lf\n %.1lf\n",odom_x, odom_y, odom_th/M_PI*180);
-  //M5.Lcd.printf("encoder:\r\n 1: %d\t2: %d\r\n 3: %d\t4: %d\r\n", encoder[0], encoder[1], encoder[2], encoder[3]);
+
   odom_msg.data.x = odom_x;
   odom_msg.data.y = odom_y;
   odom_msg.data.th = odom_th;
