@@ -1,3 +1,6 @@
 [submodule "libraries/M5Stack"]
 	path = libraries/M5Stack
 	url = https://github.com/m5stack/M5Stack.git
+[submodule "libraries/SerialBridge"]
+	path = libraries/SerialBridge
+	url = https://github.com/TNCT-Mechatech/SerialBridge.git
