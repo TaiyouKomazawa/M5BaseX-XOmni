@@ -46,8 +46,11 @@ void setup()
   M5.begin(true, false, true, true);
   M5.Power.begin();
 
-  M5.Lcd.setBrightness(200);
+  M5.Lcd.setBrightness(80);
   M5.Lcd.setTextSize(2);
+
+  M5.Speaker.begin();
+  M5.Speaker.mute();
 
   serial.add_frame(0, &odom_msg);
   serial.add_frame(1, &cmd_msg);
