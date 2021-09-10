@@ -32,6 +32,15 @@ Vector3 odom_msg;
 Vector3 cmd_msg;
 Uint8Data rst_msg;
 
+const float delta = 0.09;
+
+float lpf(float k, float raw, float &last_lpf)
+{
+  double out = k * (raw - last_lpf) + last_lpf;
+  last_lpf = out;
+  return out;
+}
+
 void setup()
 {
   M5.begin(true, false, true, true);
@@ -50,7 +59,8 @@ void setup()
 void loop()
 {
   static long lcd_cleared = millis();
-  static float speed_x, speed_y, speed_th;
+  static float speed_raw_x, speed_raw_y, speed_raw_th;
+  static float speed_x[2], speed_y[2], speed_th[2];
   static double odom_x, odom_y, odom_th;
 
   M5.update();
@@ -59,23 +69,31 @@ void loop()
   serial.update();
 
   if(serial.read() == 0){
-    speed_x = cmd_msg.data.x * 1000;
-    speed_y = cmd_msg.data.y * 1000;
-    speed_th = cmd_msg.data.th * 1000;
-    if (rst_msg.data.c == 1){
+    speed_raw_x = -cmd_msg.data.y * 1000;
+    speed_raw_y = cmd_msg.data.x * 1000;
+    speed_raw_th = cmd_msg.data.th;
+    if(rst_msg.data.c == 1){
       M5.Power.reset();
     }
   }
 
-  LF.set(speed_x, speed_y, speed_th);
-  LB.set(speed_x, speed_y, speed_th);
-  RB.set(speed_x, speed_y, speed_th);
-  RF.set(speed_x, speed_y, speed_th);
+  speed_x[1] = lpf(delta, speed_raw_x, speed_x[0]);
+  speed_y[1] = lpf(delta, speed_raw_y, speed_y[0]);
+  speed_th[1] = lpf(delta, speed_raw_th, speed_th[0]);
+
+  LF.set(speed_x[1], speed_y[1], speed_th[1]);
+  LB.set(speed_x[1], speed_y[1], speed_th[1]);
+  RB.set(speed_x[1], speed_y[1], speed_th[1]);
+  RF.set(speed_x[1], speed_y[1], speed_th[1]);
 
   omni.get_vel(odom_x, odom_y, odom_th);
 
-  M5.Lcd.printf("speed[mm,dec]:\n %.1f\n %.1f\n %.1f\n",speed_x, speed_y, speed_th/M_PI*180);
-  M5.Lcd.printf("pose [mm,dec]:\n %.1lf\n %.1lf\n %.1lf\n",odom_x, odom_y, odom_th/M_PI*180);
+  M5.Lcd.printf("vel_tar[mm/s,dec/s]:\n\
+                    %.1f\n %.1f\n %.1f\n",speed_raw_x, speed_raw_y, speed_raw_th/M_PI*180);
+  M5.Lcd.printf("vel_cur[mm/s,dec/s]:\n\
+                    %.1f\n %.1f\n %.1f\n",speed_x[1], speed_y[1], speed_th[1]/M_PI*180);
+  M5.Lcd.printf("vel_fb [mm/s,dec/s]:\n\
+                    %.1lf\n %.1lf\n %.1lf\n",odom_x, odom_y, odom_th/M_PI*180);
 
   odom_msg.data.x = odom_x;
   odom_msg.data.y = odom_y;

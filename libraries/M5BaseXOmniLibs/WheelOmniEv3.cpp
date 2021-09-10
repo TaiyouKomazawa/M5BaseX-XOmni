@@ -4,18 +4,18 @@
 void WheelOmniEv3::begin()
 {
   this->reset();
-  this->set_pid(0.3, 0.9, 0);
+  this->set_pid(0.3, 0.9, 0.001);
   _last_micros = micros();
 }
 
 double WheelOmniEv3::set(double x, double y, double th)
-{ 
+{
   double target = WheelVector::set(x, y, th);
-  int output = _forward_step(target) + _pid_step(target);
+  int output = (_forward_step(target) + _pid_step(target)) / 2;
   output = _check_pwm_limit(output);
-  
-  _base_x->SetMotorSpeed(_pos, output);
-  return output;
+
+  _base_x->SetMotorSpeed(_pos, (int8_t)output);
+  return (double)output;
 }
 
 void WheelOmniEv3::get(double &x, double &y, double &th)
@@ -76,26 +76,27 @@ int8_t WheelOmniEv3::_pid_step(double target)
 {
   double v = _get_v();
   double diff = target - v;
-  
+
   _integral += diff * _interval;
-  
+
   double p = diff;
   double d = (v - _prev_v) / _interval;
   _prev_v = v;
-  double output = _kp * p + _ki * _integral - _kd * d;  return WheelOmniEv3::_check_pwm_limit(output);
+  double output = _kp * p + _ki * _integral - _kd * d;
+  return WheelOmniEv3::_check_pwm_limit(output);
 }
 
 int8_t WheelOmniEv3::_forward_step(double x)
 {
-  int8_t output = 127* (x / WHEEL_SPEED_LIMIT);    
+  int8_t output = 127* (x / WHEEL_SPEED_LIMIT);
   return _check_pwm_limit(output);
 }
 
-inline int8_t WheelOmniEv3::_check_pwm_limit(int x)
+inline int8_t WheelOmniEv3::_check_pwm_limit(int x, uint8_t limit)
 {
-  if(x > 127)
-    x = 127;
-  else if(x < -127)
-    x = -127;
+  if (x > limit)
+    x = limit;
+  else if(x < -limit)
+    x = -limit;
   return x;
 }

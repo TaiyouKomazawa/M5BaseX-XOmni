@@ -6,7 +6,7 @@
 
 #define WHEEL_SPEED_LIMIT 465.0 //[mm/s]
 
-class WheelOmniEv3 : public WheelVector 
+class WheelOmniEv3 : public WheelVector
 {
 public:
   WheelOmniEv3(double pos_x_mm, double pos_y_mm, double vector_dir, double wheel_diameter, uint8_t pos, BASE_X &base_x)
@@ -29,12 +29,12 @@ public:
 private:
   double _get_mm();
   double _get_v();
-  
+
   int8_t _pid_step(double target);
 
   int8_t _forward_step(double x);
 
-  inline int8_t _check_pwm_limit(int x);
+  inline int8_t _check_pwm_limit(int x, uint8_t limit = 127);
 
   double _wd;
 
