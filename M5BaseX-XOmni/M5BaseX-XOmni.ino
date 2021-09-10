@@ -64,7 +64,7 @@ void loop()
   static double odom_x, odom_y, odom_th;
 
   M5.update();
-  M5.Lcd.setCursor(10, 10);
+  M5.Lcd.setCursor(0, 0);
 
   serial.update();
 
@@ -88,12 +88,12 @@ void loop()
 
   omni.get_vel(odom_x, odom_y, odom_th);
 
-  M5.Lcd.printf("vel_tar[mm/s,dec/s]:\n\
-                    %.1f\n %.1f\n %.1f\n",speed_raw_x, speed_raw_y, speed_raw_th/M_PI*180);
-  M5.Lcd.printf("vel_cur[mm/s,dec/s]:\n\
-                    %.1f\n %.1f\n %.1f\n",speed_x[1], speed_y[1], speed_th[1]/M_PI*180);
-  M5.Lcd.printf("vel_fb [mm/s,dec/s]:\n\
-                    %.1lf\n %.1lf\n %.1lf\n",odom_x, odom_y, odom_th/M_PI*180);
+  M5.Lcd.printf("vel_tar[mm/s,dec/s]:\nx:%.1f\ny:%.1f\nz:%.1f\n",
+                  speed_raw_x, speed_raw_y, speed_raw_th/M_PI*180);
+  M5.Lcd.printf("vel_cur[mm/s,dec/s]:\nx:%.1f\ny:%.1f\nz:%.1f\n",
+                  speed_x[1], speed_y[1], speed_th[1]/M_PI*180);
+  M5.Lcd.printf("vel_fb [mm/s,dec/s]:\nx:%.1lf\ny:%.1lf\nz:%.1lf\n",
+                  odom_x, odom_y, odom_th/M_PI*180);
 
   odom_msg.data.x = odom_x;
   odom_msg.data.y = odom_y;
