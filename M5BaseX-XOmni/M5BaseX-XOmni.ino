@@ -76,6 +76,10 @@ void loop()
     speed_raw_y = cmd_msg.data.x * 1000;
     speed_raw_th = cmd_msg.data.th;
     if(rst_msg.data.c == 1){
+      LF.set(0 ,0, 0);
+      LB.set(0, 0, 0);
+      RB.set(0, 0, 0);
+      RF.set(0, 0, 0);
       M5.Power.reset();
     }
   }
