@@ -111,8 +111,6 @@ void loop()
                   odom_x, odom_y, odom_th/M_PI*180);
   M5.Lcd.printf("time[ms]:\n%ld\n", millis());
 
-  delay(20);
-
   if(millis() > lcd_cleared+lcd_clear_int){
     M5.Lcd.clear();
     lcd_cleared = millis();
