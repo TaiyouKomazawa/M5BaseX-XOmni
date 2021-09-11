@@ -43,7 +43,9 @@ float lpf(float k, float raw, float &last_lpf)
 
 void setup()
 {
-  M5.begin(true, false, true, true);
+  M5.begin(true, false, false, true);
+  Serial.begin(2000000);
+  Serial.flush();
   M5.Power.begin();
 
   M5.Lcd.setBrightness(80);
