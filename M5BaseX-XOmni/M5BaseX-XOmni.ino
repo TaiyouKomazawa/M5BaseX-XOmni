@@ -107,8 +107,7 @@ void loop()
                   speed_x[1], speed_y[1], speed_th[1]/M_PI*180);
   M5.Lcd.printf("vel_fb [mm/s,dec/s]:\nx:%.1lf\ny:%.1lf\nz:%.1lf\n",
                   odom_x, odom_y, odom_th/M_PI*180);
-
-
+  M5.Lcd.printf("time[ms]:\n%ld\n", millis());
 
   delay(20);
 
