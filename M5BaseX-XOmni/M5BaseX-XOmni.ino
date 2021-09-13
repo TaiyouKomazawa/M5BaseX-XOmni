@@ -47,6 +47,11 @@ void setup()
   Serial.begin(2000000);
   Serial.flush();
   M5.Power.begin();
+  if(!M5.Power.canControl()) {
+    //can't control.
+    return;
+  }
+  M5.Power.setCharge(false);
 
   M5.Lcd.setBrightness(80);
   M5.Lcd.setTextSize(2);
@@ -113,6 +118,8 @@ void loop()
 
   if(millis() > lcd_cleared+lcd_clear_int){
     M5.Lcd.clear();
+    M5.Lcd.setCursor(0, 0);
+    M5.Lcd.printf("bat:%d%%\n", M5.Power.getBatteryLevel());
     lcd_cleared = millis();
   }
 }
