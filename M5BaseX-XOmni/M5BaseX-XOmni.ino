@@ -10,6 +10,7 @@
 
 #include "Vector3.h"
 #include "Uint8Data.h"
+//#define DEBUG_MODE
 
 #define D_OMNI_MM   48 //mm
 #define O_2_OMNI_MM  (132.1*(1/sqrt(2))) //mm
@@ -77,9 +78,6 @@ void loop()
   static float speed_x[2], speed_y[2], speed_th[2];
   static double odom_x, odom_y, odom_th;
 
-  M5.update();
-  M5.Lcd.setCursor(0, 0);
-
   serial.update();
 
   if(serial.read() == 0){
@@ -115,13 +113,8 @@ void loop()
     last_ctrl = millis();
   }
 
-  omni.get_vel(odom_x, odom_y, odom_th);
-
-  odom_msg.data.x = odom_y / 1000.0;
-  odom_msg.data.y = -odom_x / 1000.0;
-  odom_msg.data.th = odom_th;
-
-  serial.write(0);
+#ifdef DEBUG_MODE
+  M5.Lcd.setCursor(0, 0);
 
   M5.Lcd.printf("vel_tar[mm/s,dec/s]:\nx:%.1f\ny:%.1f\nz:%.1f\n",
                   speed_raw_x, speed_raw_y, speed_raw_th/M_PI*180);
@@ -131,6 +124,7 @@ void loop()
                   odom_x, odom_y, odom_th/M_PI*180);
   M5.Lcd.printf("time[ms]:\n%ld\n", millis());
 
+#endif
   if(millis() > lcd_cleared+lcd_clear_int){
     M5.Lcd.clear();
     M5.Lcd.setCursor(0, 0);
