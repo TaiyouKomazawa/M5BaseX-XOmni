@@ -23,7 +23,9 @@ WheelOmniEv3 RF( O_2_OMNI_MM,  O_2_OMNI_MM,  M_PI*3/4.0,   D_OMNI_MM, 4, base_x)
 
 Omni4 omni(LF, LB, RB, RF);
 
-int lcd_clear_int = 5000; //ms
+const int lcd_clear_int = 5000; //ms
+
+const int ctrl_interval = 1000/50.0; //50 hz
 
 SerialDev *dev = new InoHardwareSerial(&Serial);
 SerialBridge serial(dev);
@@ -69,6 +71,8 @@ void setup()
 void loop()
 {
   static long lcd_cleared = millis();
+  static long last_ctrl = millis();
+
   static float speed_raw_x, speed_raw_y, speed_raw_th;
   static float speed_x[2], speed_y[2], speed_th[2];
   static double odom_x, odom_y, odom_th;
@@ -81,7 +85,7 @@ void loop()
   if(serial.read() == 0){
     speed_raw_x = -cmd_msg.data.y * 1000;
     speed_raw_y = cmd_msg.data.x * 1000;
-    speed_raw_th = cmd_msg.data.th;
+    speed_raw_th = cmd_msg.data.z;
     if(rst_msg.data.c == 1){
       LF.set(0 ,0, 0);
       LB.set(0, 0, 0);
@@ -91,14 +95,25 @@ void loop()
     }
   }
 
-  speed_x[1] = lpf(delta, speed_raw_x, speed_x[0]);
-  speed_y[1] = lpf(delta, speed_raw_y, speed_y[0]);
-  speed_th[1] = lpf(delta, speed_raw_th, speed_th[0]);
+  omni.get_vel(odom_x, odom_y, odom_th);
 
-  LF.set(speed_x[1], speed_y[1], speed_th[1]);
-  LB.set(speed_x[1], speed_y[1], speed_th[1]);
-  RB.set(speed_x[1], speed_y[1], speed_th[1]);
-  RF.set(speed_x[1], speed_y[1], speed_th[1]);
+  odom_msg.data.x = odom_y / 1000.0;
+  odom_msg.data.y = -odom_x / 1000.0;
+  odom_msg.data.z = odom_th;
+
+  serial.write(0);
+
+  if(millis() > last_ctrl+ctrl_interval){
+    speed_x[1] = lpf(delta, speed_raw_x, speed_x[0]);
+    speed_y[1] = lpf(delta, speed_raw_y, speed_y[0]);
+    speed_th[1] = lpf(delta, speed_raw_th, speed_th[0]);
+
+    LF.set(speed_x[1], speed_y[1], speed_th[1]);
+    LB.set(speed_x[1], speed_y[1], speed_th[1]);
+    RB.set(speed_x[1], speed_y[1], speed_th[1]);
+    RF.set(speed_x[1], speed_y[1], speed_th[1]);
+    last_ctrl = millis();
+  }
 
   omni.get_vel(odom_x, odom_y, odom_th);
 
