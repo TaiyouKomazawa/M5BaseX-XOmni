@@ -1,3 +1,5 @@
+#define M5STACK_MPU6886
+
 #include <M5Stack.h>
 
 #include <BaseX.h>
@@ -8,8 +10,13 @@
 #include <SerialBridge.hpp>
 #include <InoHardwareSerial.hpp>
 
+#include "bmm150.h"
+#include "bmm150_defs.h"
+
 #include "Vector3.h"
 #include "Uint8Data.h"
+#include "Axis9Sensor.h"
+
 //#define DEBUG_MODE
 
 #define D_OMNI_MM   48 //mm
@@ -17,25 +24,26 @@
 
 BASE_X base_x = BASE_X();
 
-WheelOmniEv3 LF( -O_2_OMNI_MM, O_2_OMNI_MM,  -M_PI*3/4.0,  D_OMNI_MM, 1, base_x);
-WheelOmniEv3 LB( -O_2_OMNI_MM, -O_2_OMNI_MM, -M_PI*1/4.0,  D_OMNI_MM, 2, base_x);
-WheelOmniEv3 RB( O_2_OMNI_MM,  -O_2_OMNI_MM, M_PI*1/4.0,   D_OMNI_MM, 3, base_x);
-WheelOmniEv3 RF( O_2_OMNI_MM,  O_2_OMNI_MM,  M_PI*3/4.0,   D_OMNI_MM, 4, base_x);
+WheelOmniEv3 LF( -O_2_OMNI_MM, O_2_OMNI_MM,  -M_PI*3/4.0,  D_OMNI_MM, 3, base_x);
+WheelOmniEv3 LB( -O_2_OMNI_MM, -O_2_OMNI_MM, -M_PI*1/4.0,  D_OMNI_MM, 4, base_x);
+WheelOmniEv3 RB( O_2_OMNI_MM,  -O_2_OMNI_MM, M_PI*1/4.0,   D_OMNI_MM, 1, base_x);
+WheelOmniEv3 RF( O_2_OMNI_MM,  O_2_OMNI_MM,  M_PI*3/4.0,   D_OMNI_MM, 2, base_x);
 
 Omni4 omni(LF, LB, RB, RF);
 
-const int lcd_clear_int = 5000; //ms
-
-const int ctrl_interval = 1000/50.0; //50 hz
+const int ctrl_interval = 1000/60.0; //50 hz
 
 SerialDev *dev = new InoHardwareSerial(&Serial);
-SerialBridge serial(dev);
+SerialBridge serial(dev, 1024);
+
+BMM150 bmm = BMM150();
 
 Vector3 odom_msg;
 Vector3 cmd_msg;
 Uint8Data rst_msg;
+Axis9Sensor msense_msg;
 
-const float delta = 0.09;
+const float delta = 0.1;
 
 float lpf(float k, float raw, float &last_lpf)
 {
@@ -59,11 +67,20 @@ void setup()
   M5.Lcd.setBrightness(80);
   M5.Lcd.setTextSize(2);
 
+  if(bmm.initialize() == BMM150_E_ID_NOT_CONFORM){
+    M5.Lcd.setCursor(0, 10);
+    M5.Lcd.println("BMM150 not found!");
+    while(1){}
+  }
+
+  M5.IMU.Init();
+
   M5.Speaker.begin();
   M5.Speaker.mute();
 
   serial.add_frame(0, &odom_msg);
   serial.add_frame(1, &cmd_msg);
+  serial.add_frame(2, &msense_msg);
   serial.add_frame(3, &rst_msg);
 
   omni.begin();
@@ -71,7 +88,6 @@ void setup()
 
 void loop()
 {
-  static long lcd_cleared = millis();
   static long last_ctrl = millis();
 
   static float speed_raw_x, speed_raw_y, speed_raw_th;
@@ -101,6 +117,20 @@ void loop()
 
   serial.write(0);
 
+  M5.IMU.getGyroData( &msense_msg.data.gyro.x,
+                      &msense_msg.data.gyro.y,
+                      &msense_msg.data.gyro.z);
+  M5.IMU.getAccelData(&msense_msg.data.acc.x,
+                      &msense_msg.data.acc.y,
+                      &msense_msg.data.acc.z);
+
+  bmm.read_mag_data();
+  msense_msg.data.mag.x = bmm.raw_mag_data.raw_datax;
+  msense_msg.data.mag.y = bmm.raw_mag_data.raw_datay;
+  msense_msg.data.mag.z = bmm.raw_mag_data.raw_dataz;
+
+  serial.write(2);
+
   if(millis() > last_ctrl+ctrl_interval){
     speed_x[1] = lpf(delta, speed_raw_x, speed_x[0]);
     speed_y[1] = lpf(delta, speed_raw_y, speed_y[0]);
@@ -125,10 +155,4 @@ void loop()
   M5.Lcd.printf("time[ms]:\n%ld\n", millis());
 
 #endif
-  if(millis() > lcd_cleared+lcd_clear_int){
-    M5.Lcd.clear();
-    M5.Lcd.setCursor(0, 0);
-    M5.Lcd.printf("bat:%d%%\n", M5.Power.getBatteryLevel());
-    lcd_cleared = millis();
-  }
 }
