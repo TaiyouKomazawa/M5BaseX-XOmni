@@ -22,6 +22,9 @@
 #define D_OMNI_MM   48 //mm
 #define O_2_OMNI_MM  (132.1*(1/sqrt(2))) //mm
 
+#define DEG2RAD(x) (x *= M_PI / 180.0)
+#define G2A(x)     (x *= 9.80)
+
 BASE_X base_x = BASE_X();
 
 WheelOmniEv3 LF( -O_2_OMNI_MM, O_2_OMNI_MM,  -M_PI*3/4.0,  D_OMNI_MM, 3, base_x);
@@ -32,6 +35,8 @@ WheelOmniEv3 RF( O_2_OMNI_MM,  O_2_OMNI_MM,  M_PI*3/4.0,   D_OMNI_MM, 2, base_x)
 Omni4 omni(LF, LB, RB, RF);
 
 const int ctrl_interval = 1000/60.0; //50 hz
+
+const int timeout_interval = 1000; //1 sec
 
 SerialDev *dev = new InoHardwareSerial(&Serial);
 SerialBridge serial(dev, 1024);
@@ -89,7 +94,7 @@ void setup()
 void loop()
 {
   static long last_ctrl = millis();
-
+  static long last_cmd = 0;
   static float speed_raw_x, speed_raw_y, speed_raw_th;
   static float speed_x[2], speed_y[2], speed_th[2];
   static double odom_x, odom_y, odom_th;
@@ -100,12 +105,19 @@ void loop()
     speed_raw_x = -cmd_msg.data.y * 1000;
     speed_raw_y = cmd_msg.data.x * 1000;
     speed_raw_th = cmd_msg.data.z;
+    last_cmd = millis();
     if(rst_msg.data.c == 1){
       LF.set(0 ,0, 0);
       LB.set(0, 0, 0);
       RB.set(0, 0, 0);
       RF.set(0, 0, 0);
       M5.Power.reset();
+    }
+  }else{
+    if(last_cmd && (millis()-last_cmd) > timeout_interval){
+      speed_raw_x = cmd_msg.data.y = 0;
+      speed_raw_y = cmd_msg.data.x = 0;
+      speed_raw_th = cmd_msg.data.z = 0;
     }
   }
 
@@ -120,14 +132,19 @@ void loop()
   M5.IMU.getGyroData( &msense_msg.data.gyro.x,
                       &msense_msg.data.gyro.y,
                       &msense_msg.data.gyro.z);
+  DEG2RAD(msense_msg.data.gyro.x);
+  DEG2RAD(msense_msg.data.gyro.y);
+  DEG2RAD(msense_msg.data.gyro.z);
   M5.IMU.getAccelData(&msense_msg.data.acc.x,
                       &msense_msg.data.acc.y,
                       &msense_msg.data.acc.z);
-
+  G2A(msense_msg.data.acc.x);
+  G2A(msense_msg.data.acc.y);
+  G2A(msense_msg.data.acc.z);
   bmm.read_mag_data();
-  msense_msg.data.mag.x = bmm.raw_mag_data.raw_datax;
-  msense_msg.data.mag.y = bmm.raw_mag_data.raw_datay;
-  msense_msg.data.mag.z = bmm.raw_mag_data.raw_dataz;
+  msense_msg.data.mag.x = -bmm.mag_data.x;// / 1E6F;
+  msense_msg.data.mag.y = bmm.mag_data.y;// / 1E6F;
+  msense_msg.data.mag.z = -bmm.mag_data.z;// / 1E6F;
 
   serial.write(2);
 
