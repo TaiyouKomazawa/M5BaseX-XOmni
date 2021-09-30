@@ -9,9 +9,9 @@
 class WheelOmniEv3 : public WheelVector
 {
 public:
-  WheelOmniEv3(double pos_x_mm, double pos_y_mm, double vector_dir, double wheel_diameter, uint8_t pos, BASE_X &base_x)
-  : WheelVector(pos_x_mm, pos_y_mm, vector_dir, -1.0), _wd(wheel_diameter),
-    _pos(pos), _base_x(&base_x)
+  WheelOmniEv3(double wheel_dist, double vector_dir, double wheel_diameter, uint8_t pos, BASE_X &base_x)
+      : WheelVector(wheel_dist, vector_dir, -1.0), _wd(wheel_diameter),
+        _pos(pos), _base_x(&base_x)
   {}
 
   void begin();

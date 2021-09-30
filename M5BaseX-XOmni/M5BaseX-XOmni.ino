@@ -20,17 +20,17 @@
 //#define DEBUG_MODE
 
 #define D_OMNI_MM   48 //mm
-#define O_2_OMNI_MM  (132.1*(1/sqrt(2))) //mm
+#define O_WHEEL_MM  97.8 //mm
 
 #define DEG2RAD(x) (x *= M_PI / 180.0)
 #define G2A(x)     (x *= 9.80)
 
 BASE_X base_x = BASE_X();
 
-WheelOmniEv3 LF( -O_2_OMNI_MM, O_2_OMNI_MM,  -M_PI*3/4.0,  D_OMNI_MM, 3, base_x);
-WheelOmniEv3 LB( -O_2_OMNI_MM, -O_2_OMNI_MM, -M_PI*1/4.0,  D_OMNI_MM, 4, base_x);
-WheelOmniEv3 RB( O_2_OMNI_MM,  -O_2_OMNI_MM, M_PI*1/4.0,   D_OMNI_MM, 1, base_x);
-WheelOmniEv3 RF( O_2_OMNI_MM,  O_2_OMNI_MM,  M_PI*3/4.0,   D_OMNI_MM, 2, base_x);
+WheelOmniEv3 LF( O_WHEEL_MM, -M_PI*3/4.0,  D_OMNI_MM, 3, base_x);
+WheelOmniEv3 LB( O_WHEEL_MM, -M_PI*1/4.0,  D_OMNI_MM, 4, base_x);
+WheelOmniEv3 RB( O_WHEEL_MM, M_PI*1/4.0,   D_OMNI_MM, 1, base_x);
+WheelOmniEv3 RF( O_WHEEL_MM, M_PI*3/4.0,   D_OMNI_MM, 2, base_x);
 
 Omni4 omni(LF, LB, RB, RF);
 
