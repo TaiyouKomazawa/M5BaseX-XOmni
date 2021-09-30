@@ -23,7 +23,7 @@ public:
     double lb_x, lb_y, lb_th;
     double rb_x, rb_y, rb_th;
     double rf_x, rf_y, rf_th;
-    
+
     _LF->get(lf_x, lf_y, lf_th);
     _LB->get(lb_x, lb_y, lb_th);
     _RB->get(rb_x, rb_y, rb_th);
@@ -40,7 +40,7 @@ public:
     double lb_x, lb_y, lb_th;
     double rb_x, rb_y, rb_th;
     double rf_x, rf_y, rf_th;
-    
+
     _LF->get_vel(lf_x, lf_y, lf_th);
     _LB->get_vel(lb_x, lb_y, lb_th);
     _RB->get_vel(rb_x, rb_y, rb_th);
@@ -49,6 +49,14 @@ public:
     x = (lf_x+lb_x+rb_x+rf_x)/4.0;
     y = (lf_y+lb_y+rb_y+rf_y)/4.0;
     th = (lf_th+lb_th+rb_th+rf_th)/4.0;
+  }
+
+  void move(double x, double y, double th)
+  {
+    _LF->set(x, y, th);
+    _LB->set(x, y, th);
+    _RB->set(x, y, th);
+    _RF->set(x, y, th);
   }
 private:
   WheelOmniEv3 *_LF, *_LB, *_RB, *_RF;

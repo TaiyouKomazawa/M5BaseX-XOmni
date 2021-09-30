@@ -87,7 +87,6 @@ void loop()
   static long last_ctrl = millis();
   static long last_cmd = 0;
   static float speed_x, speed_y, speed_th;
-  static float speed_x[2], speed_y[2], speed_th[2];
   static double odom_x, odom_y, odom_th;
 
   serial.update();
@@ -98,10 +97,7 @@ void loop()
     speed_th = cmd_msg.data.z;
     last_cmd = millis();
     if(rst_msg.data.c == 1){
-      LF.set(0 ,0, 0);
-      LB.set(0, 0, 0);
-      RB.set(0, 0, 0);
-      RF.set(0, 0, 0);
+      omni.move(0, 0, 0);
       M5.Power.reset();
     }
   }else{
@@ -140,10 +136,7 @@ void loop()
   serial.write(2);
 
   if(millis() > last_ctrl+ctrl_interval){
-    LF.set(speed_x, speed_y, speed_th);
-    LB.set(speed_x, speed_y, speed_th);
-    RB.set(speed_x, speed_y, speed_th);
-    RF.set(speed_x, speed_y, speed_th);
+    omni.move(speed_x, speed_y, speed_th);
     last_ctrl = millis();
   }
 
