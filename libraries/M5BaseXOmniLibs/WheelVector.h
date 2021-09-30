@@ -23,11 +23,11 @@ public:
 
   virtual void get(double &x, double &y, double &th, double v)
   {
-    x = _gain * v * _COS; 
-    y = _gain * v * _SIN;
+    x = _gain * v / _COS;
+    y = _gain * v / _SIN;
     th = _gain * (v / _pos_r);
   }
-  
+
 private:
   double _pos_x, _pos_y;
   double _pos_r;
