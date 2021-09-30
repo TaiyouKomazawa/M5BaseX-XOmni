@@ -48,15 +48,6 @@ Vector3 cmd_msg;
 Uint8Data rst_msg;
 Axis9Sensor msense_msg;
 
-const float delta = 0.1;
-
-float lpf(float k, float raw, float &last_lpf)
-{
-  double out = k * (raw - last_lpf) + last_lpf;
-  last_lpf = out;
-  return out;
-}
-
 void setup()
 {
   M5.begin(true, false, false, true);
@@ -95,16 +86,16 @@ void loop()
 {
   static long last_ctrl = millis();
   static long last_cmd = 0;
-  static float speed_raw_x, speed_raw_y, speed_raw_th;
+  static float speed_x, speed_y, speed_th;
   static float speed_x[2], speed_y[2], speed_th[2];
   static double odom_x, odom_y, odom_th;
 
   serial.update();
 
   if(serial.read() == 0){
-    speed_raw_x = -cmd_msg.data.y * 1000;
-    speed_raw_y = cmd_msg.data.x * 1000;
-    speed_raw_th = cmd_msg.data.z;
+    speed_x = -cmd_msg.data.y * 1000;
+    speed_y = cmd_msg.data.x * 1000;
+    speed_th = cmd_msg.data.z;
     last_cmd = millis();
     if(rst_msg.data.c == 1){
       LF.set(0 ,0, 0);
@@ -115,9 +106,9 @@ void loop()
     }
   }else{
     if(last_cmd && (millis()-last_cmd) > timeout_interval){
-      speed_raw_x = cmd_msg.data.y = 0;
-      speed_raw_y = cmd_msg.data.x = 0;
-      speed_raw_th = cmd_msg.data.z = 0;
+      speed_x = cmd_msg.data.y = 0;
+      speed_y = cmd_msg.data.x = 0;
+      speed_th = cmd_msg.data.z = 0;
     }
   }
 
@@ -149,14 +140,10 @@ void loop()
   serial.write(2);
 
   if(millis() > last_ctrl+ctrl_interval){
-    speed_x[1] = lpf(delta, speed_raw_x, speed_x[0]);
-    speed_y[1] = lpf(delta, speed_raw_y, speed_y[0]);
-    speed_th[1] = lpf(delta, speed_raw_th, speed_th[0]);
-
-    LF.set(speed_x[1], speed_y[1], speed_th[1]);
-    LB.set(speed_x[1], speed_y[1], speed_th[1]);
-    RB.set(speed_x[1], speed_y[1], speed_th[1]);
-    RF.set(speed_x[1], speed_y[1], speed_th[1]);
+    LF.set(speed_x, speed_y, speed_th);
+    LB.set(speed_x, speed_y, speed_th);
+    RB.set(speed_x, speed_y, speed_th);
+    RF.set(speed_x, speed_y, speed_th);
     last_ctrl = millis();
   }
 
@@ -164,7 +151,7 @@ void loop()
   M5.Lcd.setCursor(0, 0);
 
   M5.Lcd.printf("vel_tar[mm/s,dec/s]:\nx:%.1f\ny:%.1f\nz:%.1f\n",
-                  speed_raw_x, speed_raw_y, speed_raw_th/M_PI*180);
+                  speed_x, speed_y, speed_th/M_PI*180);
   M5.Lcd.printf("vel_cur[mm/s,dec/s]:\nx:%.1f\ny:%.1f\nz:%.1f\n",
                   speed_x[1], speed_y[1], speed_th[1]/M_PI*180);
   M5.Lcd.printf("vel_fb [mm/s,dec/s]:\nx:%.1lf\ny:%.1lf\nz:%.1lf\n",
